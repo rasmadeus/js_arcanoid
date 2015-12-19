@@ -5,9 +5,28 @@
         <title>Arcanoid</title>
         <meta charset="UTF-8">
         <script type="text/javascript" src="arcanoid.js"></script>
+        <script>
+            window.onload = function () {
+                var arcanoid = new Arcanoid();
+                
+                window.addEventListener(
+                    "keydown",
+                    function (ev) {
+                        switch(ev.keyCode) {
+                            case Direction.LEFT: arcanoid.move_left(); break;
+                            case Direction.RIGHT: arcanoid.move_right(); break;
+                        }
+                    },
+                    false
+                );
+        
+                setInterval(arcanoid.step, 100);
+            };
+        </script>
     </head>
     <body>
         <div class="main_container">
+            <div id="score"><h1></h1></div>
             <canvas id="canvas">                
             </canvas>
         </div>
