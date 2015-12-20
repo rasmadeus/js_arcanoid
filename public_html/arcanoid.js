@@ -93,7 +93,6 @@ function AreaItem(area, width, height) {
 
 function Rackquet(area) {
     AreaItem.call(this, area, area.width() / 10, area.height() / 50);
-    
     this.setStep(area.width() / 100);
     this.setPosition((area.width() - this.width()) / 2, 0);
     
@@ -122,12 +121,37 @@ function Rackquet(area) {
     };
 }
 
+function Ball(area) {
+    AreaItem.call(this, area, area.height() / 25, area.height() / 25);
+    this.setDirection(Direction.RIGHT_DOWN);
+    
+    this.paint = function () {
+        var center_x = this._x + this._width / 2;
+        var center_y = this._y + this._height / 2;
+        var radius = this._width / 2;
+        
+        this._context.fillStyle = "#dd0";
+        this._context.strokeStyle = this._context.fillStyle;
+        this._context.beginPath();
+        this._context.arc(center_x, center_y, radius, 0 * Math.PI, 2 * Math.PI);
+        this._context.fill();
+        this._context.stroke();
+    };
+    
+    this.move = function () {
+        
+    };
+}
+
 function Arcanoid() {
     var canvas = document.getElementById("canvas");
     var context = canvas.getContext("2d");
     var score = 0;
     var area = new Area(context, canvas.width, canvas.height);
     var rackquet = new Rackquet(area);
+    
+    var ball = new Ball(area);
+    ball.setPosition((area.width() - ball.width()) / 2, rackquet.height() + ball.height() / 2);
     
     var paint_score = function () {
         document.getElementById("score").getElementsByTagName("h1")[0].innerHTML = "Your score: " + score;
@@ -137,6 +161,7 @@ function Arcanoid() {
         paint_score();
         area.paint();
         rackquet.paint();
+        ball.paint();
     };
     
     this.step = function () {
