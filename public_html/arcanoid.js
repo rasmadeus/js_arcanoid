@@ -8,13 +8,13 @@
 
 var Direction = {
     LEFT: 37,
-    LEFT_UP: 1,
-    UP: 2,
-    UP_RIGHT: 3,
+    UP: 1,
     RIGHT: 39,
-    RIGHT_DOWN: 5,
-    DOWN: 6,
-    DOWN_LEFT: 7    
+    DOWN: 2,
+    UP_LEFT: 3,
+    UP_RIGHT: 4,
+    RIGHT_UP: 5,
+    LEFT_UP: 6
 };
 
 function Item(context, width, height) {
@@ -46,6 +46,54 @@ function Area(context, width, height) {
     
     this.getContext = function () {
         return this._context;
+    };
+    
+    this.check_up_left = function (item) {
+        if (item.x() === 0 && item.bottom() === this._height) {
+            item.setDirection(Direction.LEFT_UP);
+        }
+        else if (item.x() === 0) {
+            item.setDirection(Direction.UP_RIGHT);
+        }
+        else if (item.bottom() === this._height) {
+            item.setDirection(Direction.RIGHT_UP);
+        }    
+    };
+    
+    this.check_up_right = function (item) {
+        if (item.right() === this._width && item.bottom() === this._height) {
+            item.setDirection(Direction.RIGHT_UP);
+        }
+        else if (item.right() === this._width) {
+            item.setDirection(Direction.UP_LEFT);
+        }
+        else if (item.bottom() === this._height) {
+            item.setDirection(Direction.LEFT_UP);
+        } 
+    };
+    
+    this.check_right_up = function (item){
+        if (item.x() === 0 && item.y() === 0) {
+            item.setDirection(Direction.UP_RIGHT);
+        }
+        else if (item.x() === 0) {
+            item.setDirection(Direction.LEFT_UP);
+        }
+        else if (item.y() === 0) {
+            item.setDirection(Direction.UP_LEFT);
+        } 
+    };
+    
+    this.check_left_up = function (item) {
+        if (item.right() === this._width && item.y() === 0) {
+            item.setDirection(Direction.UP_LEFT);
+        }
+        else if (item.right() === this._width) {
+            item.setDirection(Direction.RIGHT_UP);
+        }
+        else if (item.y() === 0) {
+            item.setDirection(Direction.UP_RIGHT);
+        } 
     };
 }
 
@@ -87,13 +135,21 @@ function AreaItem(area, width, height) {
         return this._y;
     };
     
-    this.move = function () {        
+    this.right = function () {
+        return this._x + this._width;
     };
+    
+    this.bottom = function () {
+        return this._y + this._height;
+    };
+    
+    this.move = function () {        
+    };    
 }
 
 function Rackquet(area) {
     AreaItem.call(this, area, area.width() / 10, area.height() / 50);
-    this.setStep(area.width() / 100);
+    this.setStep(area.width() / 50);
     this.setPosition((area.width() - this.width()) / 2, 0);
     
     this.paint = function () {
@@ -123,7 +179,7 @@ function Rackquet(area) {
 
 function Ball(area) {
     AreaItem.call(this, area, area.height() / 25, area.height() / 25);
-    this.setDirection(Direction.RIGHT_DOWN);
+    this.setDirection(Direction.UP_RIGHT);
     
     this.paint = function () {
         var center_x = this._x + this._width / 2;
@@ -139,7 +195,28 @@ function Ball(area) {
     };
     
     this.move = function () {
-        
+        switch(this._direction) {
+            case Direction.UP_LEFT:
+                this._x -= this._step;
+                this._y += this._step;
+                this._area.check_up_left(this);
+                break;
+            case Direction.UP_RIGHT:
+                this._x += this._step;
+                this._y += this._step;
+                this._area.check_up_right(this);
+                break;
+            case Direction.RIGHT_UP:
+                this._x -= this._step;
+                this._y -= this._step;
+                this._area.check_right_up(this);
+                break;
+            case Direction.LEFT_UP:
+                this._x += this._step;
+                this._y -= this._step;
+                this._area.check_left_up(this);
+                break;
+        }
     };
 }
 
@@ -166,6 +243,7 @@ function Arcanoid() {
     
     this.step = function () {
         paint();
+        ball.move();
     };
     
     this.move_left = function () {
