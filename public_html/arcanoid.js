@@ -164,7 +164,7 @@ function AreaItem(area, width, height) {
             item.setDirection(Direction.LEFT_UP);
             return true;
         }
-        else if (item.x() === this.x() && this.contains_y(item)) {
+        else if (item.x() === this.right() && this.contains_y(item)) {
             item.setDirection(Direction.UP_RIGHT);
             return true;
         }
@@ -197,7 +197,7 @@ function AreaItem(area, width, height) {
     
     this.check_right_up = function (item){
         if (this.cross(item)) {
-            item.setPosition(item.x(), item.bottom());
+            item.setPosition(item.x(), this.bottom());
         }
         
         if (item.x() === this.right() && item.y() === this.bottom()) {
@@ -217,7 +217,7 @@ function AreaItem(area, width, height) {
     
     this.check_left_up = function (item) {
         if (this.cross(item)) {
-            item.setPosition(item.x(), item.bottom());
+            item.setPosition(item.x(), this.bottom());
         }
         
         if (item.right() === this.x() && item.y() === this.bottom()) {
