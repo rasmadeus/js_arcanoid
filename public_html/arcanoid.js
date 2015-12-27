@@ -49,49 +49,49 @@ function Area(context, width, height) {
     };
     
     this.check_up_left = function (item) {
-        if (item.x() === 0 && item.bottom() === this._height) {
+        if (item.x() <= 0 && item.bottom() >= this._height) {
             item.setDirection(Direction.LEFT_UP);
         }
-        else if (item.x() === 0) {
+        else if (item.x() <= 0) {
             item.setDirection(Direction.UP_RIGHT);
         }
-        else if (item.bottom() === this._height) {
+        else if (item.bottom() >= this._height) {
             item.setDirection(Direction.RIGHT_UP);
         }    
     };
     
     this.check_up_right = function (item) {
-        if (item.right() === this._width && item.bottom() === this._height) {
+        if (item.right() >= this._width && item.bottom() >= this._height) {
             item.setDirection(Direction.RIGHT_UP);
         }
-        else if (item.right() === this._width) {
+        else if (item.right() >= this._width) {
             item.setDirection(Direction.UP_LEFT);
         }
-        else if (item.bottom() === this._height) {
+        else if (item.bottom() >= this._height) {
             item.setDirection(Direction.LEFT_UP);
         } 
     };
     
     this.check_right_up = function (item){
-        if (item.x() === 0 && item.y() === 0) {
+        if (item.x() <= 0 && item.y() <= 0) {
             item.setDirection(Direction.UP_RIGHT);
         }
-        else if (item.x() === 0) {
+        else if (item.x() <= 0) {
             item.setDirection(Direction.LEFT_UP);
         }
-        else if (item.y() === 0) {
+        else if (item.y() <= 0) {
             item.setDirection(Direction.UP_LEFT);
         } 
     };
     
     this.check_left_up = function (item) {
-        if (item.right() === this._width && item.y() === 0) {
+        if (item.right() >= this._width && item.y() <= 0) {
             item.setDirection(Direction.UP_LEFT);
         }
-        else if (item.right() === this._width) {
+        else if (item.right() >= this._width) {
             item.setDirection(Direction.RIGHT_UP);
         }
-        else if (item.y() === 0) {
+        else if (item.y() <= 0) {
             item.setDirection(Direction.UP_RIGHT);
         } 
     };
@@ -143,8 +143,122 @@ function AreaItem(area, width, height) {
         return this._y + this._height;
     };
     
+    this.contains_x = function (item) {
+        return item.x() >= this.x() && item.x() <= this.right();
+    };
+    
+    this.contains_y = function (item) {
+        return item.bottom() >= this.y() && item.y() <= this.bottom();  
+    };
+
+    this.cross = function (item) {
+        return this.contains_x(item) && this.contains_y(item);
+    };    
+    
+    this.check_up_left = function (item) {
+        if (this.cross(item)) {
+            item.setPosition(item.x(), this.y() - item.height());
+        }
+        
+        if (item.x() === this.right() && item.bottom() === this.y()) {
+            item.setDirection(Direction.LEFT_UP);
+            return true;
+        }
+        else if (item.x() === this.x() && this.contains_y(item)) {
+            item.setDirection(Direction.UP_RIGHT);
+            return true;
+        }
+        else if (item.bottom() === this.y() && this.contains_x(item)) {
+            item.setDirection(Direction.RIGHT_UP);
+            return true;
+        }
+        return false;
+    };
+    
+    this.check_up_right = function (item) {
+        if (this.cross(item)) {
+            item.setPosition(item.x(), this.y() - item.height());
+        }
+        
+        if (item.right() === this.x() && item.bottom() === this.y()) {
+            item.setDirection(Direction.RIGHT_UP);
+            return true;
+        }
+        else if (item.right() === this.x() && this.contains_y(item)) {
+            item.setDirection(Direction.UP_LEFT);
+            return true;
+        }
+        else if (item.bottom() === this.y() && this.contains_x(item)) {
+            item.setDirection(Direction.LEFT_UP);
+            return true;
+        }
+        return false;
+    };
+    
+    this.check_right_up = function (item){
+        if (this.cross(item)) {
+            item.setPosition(item.x(), item.bottom());
+        }
+        
+        if (item.x() === this.right() && item.y() === this.bottom()) {
+            item.setDirection(Direction.UP_RIGHT);
+            return true;
+        }
+        else if (item.x() === this.right() && this.contains_y(item)) {
+            item.setDirection(Direction.LEFT_UP);
+            return true;
+        }
+        else if (item.y() === this.bottom() && this.contains_x(item)) {
+            item.setDirection(Direction.UP_LEFT);
+            return true;
+        }
+        return false;
+    };
+    
+    this.check_left_up = function (item) {
+        if (this.cross(item)) {
+            item.setPosition(item.x(), item.bottom());
+        }
+        
+        if (item.right() === this.x() && item.y() === this.bottom()) {
+            item.setDirection(Direction.UP_LEFT);
+            return true;
+        }
+        else if (item.right() === this.x() && this.contains_y(item)) {
+            item.setDirection(Direction.RIGHT_UP);
+            return true;
+        }
+        else if (item.y() === this.bottom() && this.contains_x(item)) {
+            item.setDirection(Direction.UP_RIGHT);
+            return true;
+        }
+        return false;
+    };
+    
     this.move = function () {        
     };    
+}
+
+function Block(area, width, height) {
+    AreaItem.call(this, area, width, height);
+    
+    var random_color = function () {
+        var possible_color_components = "0123456789abcdef";
+        var color = "#";
+        var max_index = possible_color_components.length - 1;
+        for(var i = 0; i < 3; ++i) {
+            var index = Math.floor(Math.random() * max_index);
+            color += possible_color_components.charAt(index);
+        }    
+        return color;
+    };
+    
+    var color = random_color();
+    
+    this.paint = function () {
+        this._context.fillStyle = color;
+        this._context.fillRect(this._x, this._y, this._width, this._height);
+    };
 }
 
 function Rackquet(area) {
@@ -177,9 +291,88 @@ function Rackquet(area) {
     };
 }
 
-function Ball(area) {
+function Blocks() {
+    var blocks = [];
+    
+    this.make = function (area) {
+        blocks = [];
+        
+        var offset = area.height() * 0.05;
+        var rows = 5;
+        var columns = 10;
+        
+        var free_space_width = area.width() - 2 * offset - (columns - 1) * offset;
+        var free_space_height = area.height() / 2 - 2 * offset - (rows - 1) * offset;
+        
+        var block_width = free_space_width / columns;
+        var block_height = free_space_height / rows;
+
+        var x = offset;
+        var y = area.height() - block_height - offset;
+        
+        for(var row = 0; row < rows; ++row) {
+            for(var column = 0; column < columns; ++column) {
+                var block = new Block(area, block_width, block_height);
+                block.setPosition(x, y);
+                blocks.push(block);               
+                
+                x += block_width;
+                x += offset;
+            }
+            y -= block_height;
+            y -= offset;
+            x = offset;
+        }    
+    };
+    
+    this.paint = function () {
+        for(var i = 0; i < blocks.length; ++i) {
+            blocks[i].paint();
+        }
+    };    
+        
+    this.check_up_left = function (item) {
+        for(var i = 0; i < blocks.length; ++i) {
+            if (blocks[i].check_up_left(item)) {
+                blocks.splice(i, 1);
+                break;
+            }
+        }
+    };
+    
+    this.check_up_right = function (item) {
+        for(var i = 0; i < blocks.length; ++i) {
+            if (blocks[i].check_up_right(item)) {
+                blocks.splice(i, 1);
+                break;
+            }
+        }
+    };
+    
+    this.check_right_up = function (item){
+        for(var i = 0; i < blocks.length; ++i) {
+            if (blocks[i].check_right_up(item)) {
+                blocks.splice(i, 1);
+                break;
+            }
+        }
+    };
+    
+    this.check_left_up = function (item) {
+        for(var i = 0; i < blocks.length; ++i) {
+            if (blocks[i].check_left_up(item)) {
+                blocks.splice(i, 1);
+                break;
+            }
+        }
+    };    
+}
+
+function Ball(area, blocks) {
     AreaItem.call(this, area, area.height() / 25, area.height() / 25);
     this.setDirection(Direction.UP_RIGHT);
+    
+    this._blocks = blocks;
     
     this.paint = function () {
         var center_x = this._x + this._width / 2;
@@ -200,21 +393,25 @@ function Ball(area) {
                 this._x -= this._step;
                 this._y += this._step;
                 this._area.check_up_left(this);
+                this._blocks.check_up_left(this);
                 break;
             case Direction.UP_RIGHT:
                 this._x += this._step;
                 this._y += this._step;
                 this._area.check_up_right(this);
+                this._blocks.check_up_right(this);
                 break;
             case Direction.RIGHT_UP:
                 this._x -= this._step;
                 this._y -= this._step;
                 this._area.check_right_up(this);
+                this._blocks.check_right_up(this);
                 break;
             case Direction.LEFT_UP:
                 this._x += this._step;
                 this._y -= this._step;
                 this._area.check_left_up(this);
+                this._blocks.check_left_up(this);
                 break;
         }
     };
@@ -226,9 +423,12 @@ function Arcanoid() {
     var score = 0;
     var area = new Area(context, canvas.width, canvas.height);
     var rackquet = new Rackquet(area);
+
+    var blocks = new Blocks();
+    blocks.make(area);
     
-    var ball = new Ball(area);
-    ball.setPosition((area.width() - ball.width()) / 2, rackquet.height() + ball.height() / 2);
+    var ball = new Ball(area, blocks);
+    ball.setPosition((area.width() - ball.width()) / 2, rackquet.height() + ball.height() / 2);    
     
     var paint_score = function () {
         document.getElementById("score").getElementsByTagName("h1")[0].innerHTML = "Your score: " + score;
@@ -238,6 +438,7 @@ function Arcanoid() {
         paint_score();
         area.paint();
         rackquet.paint();
+        blocks.paint();
         ball.paint();
     };
     
