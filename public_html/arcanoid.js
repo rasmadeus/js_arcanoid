@@ -293,6 +293,13 @@ function Rackquet(area) {
 
 function Blocks() {
     var blocks = [];
+    var score = 0;
+    
+    var paint_score = function () {
+        document.getElementById("score").getElementsByTagName("h1")[0].innerHTML = "Your score: " + score;
+    };
+    
+    paint_score();
     
     this.make = function (area) {
         blocks = [];
@@ -322,7 +329,7 @@ function Blocks() {
             y -= block_height;
             y -= offset;
             x = offset;
-        }    
+        }   
     };
     
     this.paint = function () {
@@ -335,6 +342,8 @@ function Blocks() {
         for(var i = 0; i < blocks.length; ++i) {
             if (blocks[i].check_up_left(item)) {
                 blocks.splice(i, 1);
+                score += 1;
+                paint_score();
                 break;
             }
         }
@@ -344,6 +353,8 @@ function Blocks() {
         for(var i = 0; i < blocks.length; ++i) {
             if (blocks[i].check_up_right(item)) {
                 blocks.splice(i, 1);
+                score += 1;
+                paint_score();
                 break;
             }
         }
@@ -353,6 +364,8 @@ function Blocks() {
         for(var i = 0; i < blocks.length; ++i) {
             if (blocks[i].check_right_up(item)) {
                 blocks.splice(i, 1);
+                score += 1;
+                paint_score();
                 break;
             }
         }
@@ -362,6 +375,8 @@ function Blocks() {
         for(var i = 0; i < blocks.length; ++i) {
             if (blocks[i].check_left_up(item)) {
                 blocks.splice(i, 1);
+                score += 1;
+                paint_score();
                 break;
             }
         }
@@ -420,7 +435,6 @@ function Ball(area, blocks) {
 function Arcanoid() {
     var canvas = document.getElementById("canvas");
     var context = canvas.getContext("2d");
-    var score = 0;
     var area = new Area(context, canvas.width, canvas.height);
     var rackquet = new Rackquet(area);
 
@@ -428,14 +442,9 @@ function Arcanoid() {
     blocks.make(area);
     
     var ball = new Ball(area, blocks);
-    ball.setPosition((area.width() - ball.width()) / 2, rackquet.height() + ball.height() / 2);    
-    
-    var paint_score = function () {
-        document.getElementById("score").getElementsByTagName("h1")[0].innerHTML = "Your score: " + score;
-    };
+    ball.setPosition((area.width() - ball.width()) / 2, rackquet.height() + ball.height() / 2);
     
     var paint = function () {
-        paint_score();
         area.paint();
         rackquet.paint();
         blocks.paint();
