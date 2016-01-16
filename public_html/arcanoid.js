@@ -8,7 +8,6 @@
 
 var Direction = {
     LEFT: 37,
-    UP: 1,
     RIGHT: 39,
     DOWN: 2,
     UP_LEFT: 3,
@@ -142,7 +141,7 @@ function AreaItem(area, width, height) {
     this.bottom = function () {
         return this._y + this._height;
     };
-    
+
     this.contains_x = function (item) {
         return item.x() >= this.x() && item.x() <= this.right();
     };
@@ -262,8 +261,8 @@ function Block(area, width, height) {
 }
 
 function Rackquet(area) {
-    AreaItem.call(this, area, area.width() / 10, area.height() / 50);
-    this.setStep(area.width() / 50);
+    AreaItem.call(this, area, area.width() / 7, area.height() / 50);
+    this.setStep(area.width() / 40);
     this.setPosition((area.width() - this.width()) / 2, 0);
     
     this.paint = function () {
@@ -271,23 +270,12 @@ function Rackquet(area) {
         this._context.fillRect(this._x, this._y, this._width, this._height);
     };
     
-    this.move = function () {
-        if (this._direction === Direction.LEFT) {
-            this._x = Math.max(0, this._x - this._step);
-        }
-        else if (this._direction === Direction.RIGHT) {
-            this._x = Math.min(area.width() - this.width(), this._x + this._step);
-        }
-    };
-    
     this.move_left = function () {
-        this.setDirection(Direction.LEFT);
-        this.move();
+        this._x = Math.max(0, this._x - this._step);
     };
     
     this.move_right = function () {
-        this.setDirection(Direction.RIGHT);
-        this.move();
+        this._x = Math.min(area.width() - this.width(), this._x + this._step);
     };
 }
 
@@ -383,11 +371,12 @@ function Blocks() {
     };    
 }
 
-function Ball(area, blocks) {
+function Ball(area, blocks, rackquet) {
     AreaItem.call(this, area, area.height() / 25, area.height() / 25);
     this.setDirection(Direction.UP_RIGHT);
     
     this._blocks = blocks;
+    this._rackquet = rackquet;
     
     this.paint = function () {
         var center_x = this._x + this._width / 2;
@@ -421,12 +410,14 @@ function Ball(area, blocks) {
                 this._y -= this._step;
                 this._area.check_right_up(this);
                 this._blocks.check_right_up(this);
+                this._rackquet.check_right_up(this);
                 break;
             case Direction.LEFT_UP:
                 this._x += this._step;
                 this._y -= this._step;
                 this._area.check_left_up(this);
                 this._blocks.check_left_up(this);
+                this._rackquet.check_left_up(this);
                 break;
         }
     };
@@ -441,7 +432,7 @@ function Arcanoid() {
     var blocks = new Blocks();
     blocks.make(area);
     
-    var ball = new Ball(area, blocks);
+    var ball = new Ball(area, blocks, rackquet);
     ball.setPosition((area.width() - ball.width()) / 2, rackquet.height() + ball.height() / 2);
     
     var paint = function () {
@@ -451,9 +442,23 @@ function Arcanoid() {
         ball.paint();
     };
     
-    this.step = function () {
+    var show_end_game = function () {
+        document.getElementById("endgame").getElementsByTagName("h1")[0].innerHTML = "Game over";
+    };
+    
+    var step = function () {
         paint();
         ball.move();
+        if (ball.y() <= 0)
+        {
+            show_end_game();
+            return;
+        }
+        window.requestAnimationFrame(step);
+    };
+    
+    this.start = function () {
+        step();
     };
     
     this.move_left = function () {
